@@ -1,0 +1,52 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx expo-doctor
+      - name: Web build
+        run: npx expo export --platform web
+
+  # Android: publishes an OTA update to the `production` channel on every push to main. If the
+  # native fingerprint changed (new native module, SDK upgrade, app.json native config), there is
+  # no compatible APK yet, so it starts a new APK build too. Phones need that APK installed once.
+  # The website is deployed by Render after these checks pass (render.yaml).
+  deploy-android:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: checks
+    runs-on: ubuntu-latest
+    concurrency: deploy-android
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: expo/expo-github-action@main
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
+        with:
+          profile: production
+          branch: production
+          platform: android
+          environment: production
