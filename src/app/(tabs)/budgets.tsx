@@ -40,7 +40,7 @@ export default function Budgets() {
       {data?.length === 0 && <Empty>No budgets yet.</Empty>}
       {data?.map((b) => {
         const ratio = Number(b.spent) / Number(b.amount);
-        const color = ratio > 1 ? c.expense : ratio > 0.8 ? c.warn : c.income;
+        const color = ratio > 1 ? c.expense : ratio > 0.8 ? c.accent : c.primary;
         return (
           <Card key={b.id}>
             <Row style={{ justifyContent: 'space-between' }}>

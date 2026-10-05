@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,7 +12,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { useColors } from '@/lib/theme';
+import { fonts, useColors } from '@/lib/theme';
+
+const LOGO = require('../../assets/logo.png');
 
 /** Scrollable page body, width-capped so it reads well on desktop web. */
 export function Screen({ children, footer }: { children: React.ReactNode; footer?: React.ReactNode }) {
@@ -63,7 +66,7 @@ export function Body({
     <Text
       style={{
         color: color ?? (muted ? c.muted : c.text),
-        fontWeight: bold ? '600' : '400',
+        fontFamily: bold ? fonts.semibold : undefined,
         fontSize: size,
         fontVariant: ['tabular-nums'],
       }}
@@ -107,7 +110,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <Text style={{ color: fg, fontWeight: '600', fontSize: 16 }}>{title}</Text>
+        <Text style={{ color: fg, fontFamily: fonts.semibold, fontSize: 16 }}>{title}</Text>
       )}
     </Pressable>
   );
@@ -160,7 +163,13 @@ export function Chips<T extends string>({
                 },
               ]}
             >
-              <Text style={{ color: selected ? c.primaryText : c.text, fontSize: 14 }}>
+              <Text
+                style={{
+                  color: selected ? c.primaryText : c.text,
+                  fontSize: 14,
+                  fontFamily: selected ? fonts.semibold : undefined,
+                }}
+              >
                 {o.label}
               </Text>
             </Pressable>
@@ -178,9 +187,7 @@ export function MonthPicker({ label, onPrev, onNext }: { label: string; onPrev: 
       <Pressable accessibilityLabel="Previous month" onPress={onPrev} hitSlop={12}>
         <Ionicons name="chevron-back" size={22} color={c.text} />
       </Pressable>
-      <Body bold size={17}>
-        {label}
-      </Body>
+      <Text style={{ color: c.text, fontFamily: fonts.display, fontSize: 18 }}>{label}</Text>
       <Pressable accessibilityLabel="Next month" onPress={onNext} hitSlop={12}>
         <Ionicons name="chevron-forward" size={22} color={c.text} />
       </Pressable>
@@ -204,16 +211,50 @@ export function ProgressBar({ ratio, color }: { ratio: number; color: string }) 
   );
 }
 
+// Darker gold ring so the add button reads as a kaasu coin, like the one in the logo.
+const GOLD_RIM = '#B98E22';
+
 export function Fab({ onPress, label }: { onPress: () => void; label: string }) {
   const c = useColors();
   return (
     <Pressable
       accessibilityLabel={label}
       onPress={onPress}
-      style={[styles.fab, { backgroundColor: c.primary }]}
+      style={({ pressed }) => [
+        styles.fab,
+        { backgroundColor: c.accent, borderColor: GOLD_RIM },
+        pressed && { transform: [{ scale: 0.96 }] },
+      ]}
     >
-      <Ionicons name="add" size={28} color={c.primaryText} />
+      <Ionicons name="add" size={30} color={c.accentText} />
     </Pressable>
+  );
+}
+
+/** Logo tile + wordmark, with the Tamil name underneath when `large`. */
+export function Brand({ large }: { large?: boolean }) {
+  const c = useColors();
+  const size = large ? 96 : 28;
+  return (
+    <View
+      style={{
+        flexDirection: large ? 'column' : 'row',
+        alignItems: 'center',
+        gap: large ? 12 : 8,
+      }}
+      accessibilityRole="header"
+      accessibilityLabel="Kaasupathayam"
+    >
+      <Image source={LOGO} style={{ width: size, height: size }} />
+      <View style={{ alignItems: large ? 'center' : 'flex-start' }}>
+        <Text style={{ color: c.text, fontFamily: fonts.display, fontSize: large ? 30 : 18 }}>
+          Kaasupathayam
+        </Text>
+        {large && (
+          <Text style={{ color: c.muted, fontFamily: fonts.tamil, fontSize: 17 }}>காசுபத்தாயம்</Text>
+        )}
+      </View>
+    </View>
   );
 }
 
@@ -240,18 +281,18 @@ export function Empty({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   screen: { padding: 16, paddingBottom: 96, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720, gap: 16 },
-  card: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, padding: 16, gap: 12 },
-  title: { fontSize: 22, fontWeight: '700' },
-  label: { fontSize: 13, fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.4 },
+  card: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
+  title: { fontSize: 26, fontFamily: fonts.display, letterSpacing: -0.3 },
+  label: { fontSize: 12, fontFamily: fonts.medium, textTransform: 'uppercase', letterSpacing: 0.8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   button: {
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     paddingVertical: 13,
     paddingHorizontal: 18,
     alignItems: 'center',
   },
-  input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, fontSize: 16 },
+  input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, fontSize: 16 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
@@ -262,6 +303,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,

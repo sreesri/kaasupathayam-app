@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Body, Button, Card, ErrorText, Field, Label, Screen } from '@/components/ui';
+import { Body, Brand, Button, Card, ErrorText, Field, Label, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 import { useCreateHousehold, useJoinHousehold } from '@/lib/queries';
 
@@ -14,6 +14,7 @@ export default function Onboarding() {
 
   return (
     <Screen>
+      <Brand />
       <Body muted>
         A household groups the people who share finances. Everyone keeps their own accounts and
         transactions, and the Household tab shows the combined picture.

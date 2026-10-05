@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
-import { useColors } from '@/lib/theme';
+import { Brand } from '@/components/ui';
+import { fonts, useColors } from '@/lib/theme';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -21,8 +22,11 @@ export default function TabsLayout() {
         tabBarActiveTintColor: c.primary,
         tabBarInactiveTintColor: c.muted,
         tabBarStyle: { backgroundColor: c.card, borderTopColor: c.border },
+        tabBarLabelStyle: { fontFamily: fonts.medium },
         headerStyle: { backgroundColor: c.card },
         headerTintColor: c.text,
+        headerTitleStyle: { fontFamily: fonts.display },
+        headerShadowVisible: false,
       }}
     >
       {TABS.map((t) => (
@@ -31,6 +35,8 @@ export default function TabsLayout() {
           name={t.name}
           options={{
             title: t.title,
+            // Home carries the brand; the other tabs keep plain titles.
+            ...(t.name === 'index' && { headerTitle: () => <Brand /> }),
             tabBarIcon: ({ color, size }) => <Ionicons name={t.icon} size={size} color={color} />,
           }}
         />

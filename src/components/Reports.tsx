@@ -1,18 +1,18 @@
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Body, Card, Label, Loading, ProgressBar, Row } from './ui';
 import { monthLabel, money } from '@/lib/format';
 import { useLookups, useSummary, useTrend } from '@/lib/queries';
-import { useColors } from '@/lib/theme';
+import { fonts, useColors } from '@/lib/theme';
 import type { Scope } from '@/lib/types';
 
 function Tile({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <View style={{ flex: 1, gap: 4 }}>
       <Label>{label}</Label>
-      <Body bold size={17} color={color}>
+      <Text style={{ color, fontFamily: fonts.display, fontSize: 19, fontVariant: ['tabular-nums'] }}>
         {value}
-      </Body>
+      </Text>
     </View>
   );
 }
@@ -65,7 +65,7 @@ export function SummaryReport({ scope, start, end }: { scope: Scope; start: stri
                 <Body>{look.category(x.category_id)?.name ?? 'Uncategorised'}</Body>
                 <Body>{money(x.total, look.currency)}</Body>
               </Row>
-              <ProgressBar ratio={Number(x.total) / maxExpense} color={c.expense} />
+              <ProgressBar ratio={Number(x.total) / maxExpense} color={c.primary} />
             </View>
           ))
         )}

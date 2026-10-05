@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 
 import { GoogleSignInButton } from '@/components/GoogleSignIn';
-import { Body, Card, ErrorText, Screen, Title } from '@/components/ui';
+import { Body, Brand, Card, ErrorText, Screen } from '@/components/ui';
 import { useAuth } from '@/lib/auth';
 
 export default function SignIn() {
@@ -23,8 +23,10 @@ export default function SignIn() {
 
   return (
     <Screen>
-      <Title>Kaasupathayam</Title>
-      <Body muted>Track your household&apos;s money together.</Body>
+      <View style={{ alignItems: 'center', gap: 12, paddingTop: 48, paddingBottom: 8 }}>
+        <Brand large />
+        <Body muted>Track your household&apos;s money together.</Body>
+      </View>
       <Card style={{ alignItems: 'center' }}>
         {busy ? <ActivityIndicator /> : <GoogleSignInButton onIdToken={onIdToken} onError={setError} />}
         <ErrorText error={error} />

@@ -1,16 +1,32 @@
+import {
+  BricolageGrotesque_500Medium,
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import { Catamaran_700Bold } from '@expo-google-fonts/catamaran';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
-import { useColors } from '@/lib/theme';
+import { fonts, useColors } from '@/lib/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
 });
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    BricolageGrotesque_500Medium,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    Catamaran_700Bold,
+  });
+  // On a font load failure, carry on with system fonts rather than a blank screen.
+  if (!fontsLoaded && !fontError) return null;
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -43,6 +59,8 @@ function RootNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: c.card },
         headerTintColor: c.text,
+        headerTitleStyle: { fontFamily: fonts.display },
+        headerShadowVisible: false,
         contentStyle: { backgroundColor: c.bg },
       }}
     >
