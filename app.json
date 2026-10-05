@@ -37,6 +37,17 @@
     "platforms": [
       "android",
       "web"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2ef141e1-4900-4d7f-8f75-1b72e0612386"
+      }
+    },
+    "owner": "dev.shriram.ms",
+    "updates": {
+      "url": "https://u.expo.dev/2ef141e1-4900-4d7f-8f75-1b72e0612386"
+    },
+    "ios": {}
   }
 }
