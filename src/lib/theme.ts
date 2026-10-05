@@ -6,7 +6,7 @@ const light = {
   text: '#16181D',
   muted: '#6B7280',
   border: '#E3E6EB',
-  primary: '#0F766E',
+  primary: '#0F4C5C', // peacock, from the logo
   primaryText: '#FFFFFF',
   income: '#15803D',
   expense: '#B91C1C',
@@ -21,8 +21,8 @@ const dark: typeof light = {
   text: '#ECEEF2',
   muted: '#9AA1AD',
   border: '#2A2E36',
-  primary: '#2DD4BF',
-  primaryText: '#04201D',
+  primary: '#E2B33C', // the logo's gold reads better than peacock on a dark background
+  primaryText: '#1F1600',
   income: '#4ADE80',
   expense: '#F87171',
   transfer: '#A5B4FC',
