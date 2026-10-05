@@ -34,17 +34,29 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Skip (rather than fail) until EAS is set up; a red job would also block Render's
+      # checksPass deploy of the website.
+      - name: Check EAS is configured
+        id: eas
+        run: |
+          echo "ready=${{ secrets.EXPO_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+          [ "${{ secrets.EXPO_TOKEN != '' }}" = "true" ] || echo "::notice::EXPO_TOKEN secret not set; skipping Android deploy"
+      - if: steps.eas.outputs.ready == 'true'
+        uses: actions/checkout@v4
+      - if: steps.eas.outputs.ready == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
-      - uses: expo/expo-github-action@main
+      - if: steps.eas.outputs.ready == 'true'
+        run: npm ci
+      - if: steps.eas.outputs.ready == 'true'
+        uses: expo/expo-github-action@main
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
-      - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
+      - if: steps.eas.outputs.ready == 'true'
+        uses: expo/expo-github-action/continuous-deploy-fingerprint@main
         with:
           profile: production
           branch: production
