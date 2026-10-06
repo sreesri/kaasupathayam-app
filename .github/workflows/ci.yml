@@ -17,7 +17,11 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      # Version drift is skipped: Expo patch releases would otherwise turn main red (and block
+      # Render's checksPass deploy) without any change here. Run `npx expo install --check` locally.
       - run: npx expo-doctor
+        env:
+          EXPO_DOCTOR_SKIP_DEPENDENCY_VERSION_CHECK: "1"
       - name: Web build
         run: npx expo export --platform web
 
