@@ -1,0 +1,60 @@
+name: Build Android APK
+
+# Manual button: Actions → "Build Android APK" → Run workflow. Builds a production APK on EAS
+# from the selected branch. Pushes to main don't need this: ci.yml builds automatically when the
+# native fingerprint changes and otherwise ships an OTA update.
+on:
+  workflow_dispatch:
+    inputs:
+      wait:
+        description: Wait for the build to finish and link the APK in the run summary
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-android
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Check EAS is configured
+        run: |
+          [ -n "$EXPO_TOKEN" ] || { echo "::error::Add the EXPO_TOKEN repository secret first (see README › Deployment)"; exit 1; }
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: expo/expo-github-action@main
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Build on EAS
+        run: |
+          eas build --platform android --profile production --non-interactive --json \
+            ${{ inputs.wait && ' ' || '--no-wait' }} > build.json
+      - name: Summary
+        run: |
+          node -e '
+            const fs = require("fs");
+            const [build] = JSON.parse(fs.readFileSync("build.json", "utf8"));
+            const { owner, slug } = JSON.parse(fs.readFileSync("app.json", "utf8")).expo;
+            const page = `https://expo.dev/accounts/${owner}/projects/${slug}/builds/${build.id}`;
+            const apk = build.artifacts?.applicationArchiveUrl ?? build.artifacts?.buildUrl;
+            const lines = [
+              "## Android APK build",
+              `- Status: **${build.status}**`,
+              `- Build page (install link and QR code): ${page}`,
+              apk ? `- APK download: ${apk}` : "- The APK link appears on the build page when the build finishes.",
+            ];
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+            console.log(lines.join("\n"));
+          '

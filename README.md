@@ -22,6 +22,8 @@ On every push to `main`, `.github/workflows/ci.yml` does the following:
 2. **Android:** publishes an EAS Update to the `production` channel. Installed apps download it in the background on launch and switch to it on the next launch. If native code changed (new native library, Expo SDK upgrade, native settings in `app.json`), it also starts a new APK build. The `fingerprint` runtime version keeps updates away from APKs that can't run them, so everyone needs to install that new APK once.
 3. **Website:** Render deploys after the checks pass (`render.yaml`, `autoDeployTrigger: checksPass`).
 
+To build an APK on demand, open GitHub → **Actions → Build Android APK → Run workflow** (`.github/workflows/build-android.yml`). It builds the selected branch with the `production` profile. The run summary links to the build page, which has the install link and QR code. Tick **Wait for the build** if you also want the APK download link in the summary, but note the run then stays open until EAS finishes, which can take a while on the free tier's queue.
+
 ### One-time setup
 
 Deploy the backend first (see its README).
