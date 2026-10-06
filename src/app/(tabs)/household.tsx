@@ -1,12 +1,10 @@
-import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import { SummaryReport, TrendReport } from '@/components/Reports';
 import { TransactionRow } from '@/components/TransactionRow';
 import {
   Body,
-  Button,
   Card,
   Chips,
   Empty,
@@ -16,9 +14,9 @@ import {
   Screen,
   Title,
 } from '@/components/ui';
-import { useAuth, useUser } from '@/lib/auth';
+import { useUser } from '@/lib/auth';
 import { ACCOUNT_TYPE_LABEL, currentMonth, monthLabel, monthRange, money, shiftMonth } from '@/lib/format';
-import { useAccounts, useHousehold, useRegenerateInvite, useTransactions } from '@/lib/queries';
+import { useAccounts, useHousehold, useTransactions } from '@/lib/queries';
 import { useColors } from '@/lib/theme';
 
 const ALL = 'all';
@@ -27,10 +25,8 @@ const ALL = 'all';
 export default function HouseholdTab() {
   const c = useColors();
   const me = useUser();
-  const { signOut } = useAuth();
   const household = useHousehold().data;
   const accounts = useAccounts('household').data ?? [];
-  const regenerate = useRegenerateInvite();
   const [month, setMonth] = useState(currentMonth());
   const [member, setMember] = useState<string>(ALL);
   const { start, end } = monthRange(month);
@@ -107,26 +103,10 @@ export default function HouseholdTab() {
             </Body>
           </Row>
         ))}
-        <Label>Invite code</Label>
-        <Row style={{ justifyContent: 'space-between' }}>
-          <Pressable onPress={() => Clipboard.setStringAsync(household.invite_code)}>
-            <Body bold size={20}>
-              {household.invite_code}
-            </Body>
-            <Body muted size={12}>
-              Tap to copy. Share it with family members so they can join.
-            </Body>
-          </Pressable>
-          {me.role === 'owner' && (
-            <Pressable onPress={() => regenerate.mutate()} hitSlop={8}>
-              <Body muted size={13}>
-                New code
-              </Body>
-            </Pressable>
-          )}
-        </Row>
+        <Body muted size={13}>
+          Invite more people from Settings (the gear at the top).
+        </Body>
       </Card>
-      <Button title="Sign out" variant="secondary" onPress={signOut} />
     </Screen>
   );
 }

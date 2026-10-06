@@ -108,9 +108,22 @@ export const useCreateAccount = () =>
   );
 
 export const useUpdateAccount = () =>
-  useWrite(({ id, ...body }: { id: string; name?: string; archived?: boolean }) =>
-    api<Account>(`/accounts/${id}`, { method: 'PATCH', body }),
+  useWrite(
+    ({
+      id,
+      ...body
+    }: {
+      id: string;
+      name?: string;
+      opening_balance?: string;
+      credit_limit?: string | null;
+      archived?: boolean;
+    }) => api<Account>(`/accounts/${id}`, { method: 'PATCH', body }),
   );
+
+/** Fails with 409 when the account has transactions; archive those instead. */
+export const useDeleteAccount = () =>
+  useWrite((id: string) => api(`/accounts/${id}`, { method: 'DELETE' }));
 
 export const useCreateCategory = () =>
   useWrite((body: { name: string; kind: CategoryKind }) =>

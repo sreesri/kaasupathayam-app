@@ -68,6 +68,12 @@ function AccountCard({
   const balance = Number(a.balance);
   const isCard = a.type === 'credit_card';
   return (
+    <Pressable
+      onPress={() => router.push({ pathname: '/account', params: { id: a.id } })}
+      accessibilityRole="button"
+      accessibilityHint="Edit or delete this account"
+      style={({ pressed }) => pressed && { opacity: 0.7 }}
+    >
     <Card>
       <Row style={{ justifyContent: 'space-between' }}>
         <View style={{ gap: 2 }}>
@@ -87,11 +93,17 @@ function AccountCard({
           )}
         </View>
       </Row>
-      <Pressable onPress={onToggleArchive} hitSlop={8}>
+      <Row style={{ justifyContent: 'space-between' }}>
+        <Pressable onPress={onToggleArchive} hitSlop={8}>
+          <Body muted size={13}>
+            {a.archived ? 'Restore' : 'Archive'}
+          </Body>
+        </Pressable>
         <Body muted size={13}>
-          {a.archived ? 'Restore' : 'Archive'}
+          Edit ›
         </Body>
-      </Pressable>
+      </Row>
     </Card>
+    </Pressable>
   );
 }

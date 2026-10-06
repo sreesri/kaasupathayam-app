@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
+import { Pressable } from 'react-native';
 
 import { Brand } from '@/components/ui';
 import { fonts, useColors } from '@/lib/theme';
@@ -27,6 +28,17 @@ export default function TabsLayout() {
         headerTintColor: c.text,
         headerTitleStyle: { fontFamily: fonts.display },
         headerShadowVisible: false,
+        headerRight: () => (
+          <Pressable
+            onPress={() => router.push('/settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+            hitSlop={12}
+            style={{ paddingHorizontal: 16 }}
+          >
+            <Ionicons name="settings-outline" size={22} color={c.text} />
+          </Pressable>
+        ),
       }}
     >
       {TABS.map((t) => (

@@ -73,7 +73,8 @@ function RootNavigator() {
       <Stack.Protected guard={inHousehold}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="transaction" options={{ presentation: 'modal', title: 'Transaction' }} />
-        <Stack.Screen name="account" options={{ presentation: 'modal', title: 'New account' }} />
+        <Stack.Screen name="account" options={{ presentation: 'modal', title: 'Account' }} />
+        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         <Stack.Screen name="budget" options={{ presentation: 'modal', title: 'New budget' }} />
         <Stack.Screen name="recurring/index" options={{ title: 'Recurring' }} />
         <Stack.Screen name="recurring/new" options={{ presentation: 'modal', title: 'New recurring' }} />
