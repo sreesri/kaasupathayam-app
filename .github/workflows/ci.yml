@@ -15,6 +15,10 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # EAS Build installs with npm 10, which rejects lock files that npm 11 accepts (e.g. an
+      # auto-installed peer outside another package's peer range). Catch that here, not on EAS.
+      - name: Lock file installs with npm 10 (as on EAS)
+        run: npx -y npm@10 ci --include=dev --ignore-scripts --dry-run
       - run: npm run typecheck
       - run: npm run lint
       # Version drift is skipped: Expo patch releases would otherwise turn main red (and block
