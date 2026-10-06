@@ -2,6 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useEffect, useState } from 'react';
 import { Pressable, Text } from 'react-native';
 
+import { UpdateSettings } from '@/components/AppUpdates';
 import { Body, Button, Card, ErrorText, Label, Loading, Row, Screen } from '@/components/ui';
 import { useAuth, useUser } from '@/lib/auth';
 import { useHousehold, useRegenerateInvite } from '@/lib/queries';
@@ -88,6 +89,7 @@ export default function Settings() {
           {me.email}
         </Body>
       </Card>
+      <UpdateSettings />
       <Button title="Sign out" variant="secondary" onPress={signOut} />
     </Screen>
   );

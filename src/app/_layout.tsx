@@ -10,6 +10,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 
+import { UpdateBanner } from '@/components/AppUpdates';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { fonts, useColors } from '@/lib/theme';
 
@@ -31,6 +32,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <RootNavigator />
+        <UpdateBanner />
         <StatusBar style="auto" />
       </AuthProvider>
     </QueryClientProvider>
