@@ -68,15 +68,6 @@ export interface TransactionInput {
   note?: string | null;
 }
 
-export interface BudgetStatus {
-  id: string;
-  category_id: string;
-  user_id: string | null;
-  amount: string;
-  spent: string;
-  remaining: string;
-}
-
 export interface Summary {
   start: string;
   end: string;

@@ -47,11 +47,6 @@ export function Card({ children, style }: { children: React.ReactNode; style?: V
   );
 }
 
-export function Title({ children }: { children: React.ReactNode }) {
-  const c = useColors();
-  return <Text style={[styles.title, { color: c.text }]}>{children}</Text>;
-}
-
 export function Label({ children }: { children: React.ReactNode }) {
   const c = useColors();
   return <Text style={[styles.label, { color: c.muted }]}>{children}</Text>;
@@ -332,7 +327,6 @@ const styles = StyleSheet.create({
   screen: { padding: 16, paddingBottom: 96, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720, gap: 16 },
   card: { borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
-  title: { fontSize: 26, fontFamily: fonts.display, letterSpacing: -0.3 },
   label: { fontSize: 12, fontFamily: fonts.medium, textTransform: 'uppercase', letterSpacing: 0.8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   button: {

@@ -4,7 +4,6 @@ import { api } from './api';
 import type {
   Account,
   AccountType,
-  BudgetStatus,
   Category,
   CategoryKind,
   Household,
@@ -64,15 +63,9 @@ export const useTrend = (scope: Scope, months = 6) =>
     queryFn: () => api<TrendPoint[]>('/reports/trend', { query: { scope, months } }),
   });
 
-export const useBudgetStatus = (scope: Scope, month: string) =>
-  useQuery({
-    queryKey: ['budgets', scope, month],
-    queryFn: () => api<BudgetStatus[]>('/budgets/status', { query: { scope, month } }),
-  });
-
 // --- writes ---
 
-/** Balances, budgets and reports all derive from transactions, so any write refreshes everything. */
+/** Balances and reports all derive from transactions, so any write refreshes everything. */
 function useWrite<TArgs, TResult = unknown>(fn: (args: TArgs) => Promise<TResult>) {
   const qc = useQueryClient();
   return useMutation({ mutationFn: fn, onSuccess: () => qc.invalidateQueries() });
@@ -121,19 +114,6 @@ export const useCreateCategory = () =>
   useWrite((body: { name: string; kind: CategoryKind }) =>
     api<Category>('/categories', { method: 'POST', body }),
   );
-
-export const useCreateBudget = () =>
-  useWrite((body: { category_id: string; amount: string; shared: boolean }) =>
-    api('/budgets', { method: 'POST', body }),
-  );
-
-export const useUpdateBudget = () =>
-  useWrite(({ id, amount }: { id: string; amount: string }) =>
-    api(`/budgets/${id}`, { method: 'PATCH', body: { amount } }),
-  );
-
-export const useDeleteBudget = () =>
-  useWrite((id: string) => api(`/budgets/${id}`, { method: 'DELETE' }));
 
 export const useCreateHousehold = () =>
   useWrite((body: { name: string; currency: string }) =>

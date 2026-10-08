@@ -11,7 +11,6 @@ const TABS: { name: string; title: string; icon: IconName }[] = [
   { name: 'index', title: 'Home', icon: 'home-outline' },
   { name: 'transactions', title: 'Transactions', icon: 'list-outline' },
   { name: 'accounts', title: 'Accounts', icon: 'card-outline' },
-  { name: 'budgets', title: 'Budgets', icon: 'pie-chart-outline' },
   { name: 'household', title: 'Household', icon: 'people-outline' },
 ];
 

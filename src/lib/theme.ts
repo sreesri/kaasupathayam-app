@@ -15,7 +15,6 @@ const light = {
   expense: '#B4232F',
   transfer: '#3A6EA5',
   track: '#F0E7D6', // progress tracks and the segmented-control groove
-  warn: '#8A5A00', // "near the limit" text; dark enough for 4.5:1 on card
   activePill: '#DCEAEC', // behind the active tab's icon
   scrim: 'rgba(11, 23, 27, 0.5)', // behind bottom sheets
   // Categorical chart colours in slot order. Validated (dataviz validate_palette.js) for adjacent
@@ -38,7 +37,6 @@ const dark: typeof light = {
   expense: '#F28B8B',
   transfer: '#8FB4E0',
   track: '#1C3238',
-  warn: '#F2C14E',
   activePill: '#3A3420',
   scrim: 'rgba(0, 0, 0, 0.6)',
   chart: ['#1F9FB8', '#B98822', '#D86A9F', '#5A9832', '#7380DE', '#E0604C'],
