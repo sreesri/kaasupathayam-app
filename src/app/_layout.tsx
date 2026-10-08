@@ -78,8 +78,6 @@ function RootNavigator() {
         <Stack.Screen name="account" options={{ presentation: 'modal', title: 'Account' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         <Stack.Screen name="budget" options={{ presentation: 'modal', title: 'New budget' }} />
-        <Stack.Screen name="recurring/index" options={{ title: 'Recurring' }} />
-        <Stack.Screen name="recurring/new" options={{ presentation: 'modal', title: 'New recurring' }} />
       </Stack.Protected>
     </Stack>
   );

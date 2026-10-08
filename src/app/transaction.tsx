@@ -55,7 +55,7 @@ function TransactionForm({ existing }: { existing?: Transaction }) {
       <Stack.Screen options={{ title: id ? 'Edit transaction' : 'Add transaction' }} />
       <Card>
         <EntryFields draft={draft} onChange={setDraft} lockType={!!id} />
-        <DateField label="Date" value={date} onChange={(d) => d && setDate(d)} />
+        <DateField label="Date" value={date} onChange={setDate} />
         <ErrorText error={error} />
         <Button title="Save" onPress={save} loading={create.isPending || update.isPending} />
         {id && (

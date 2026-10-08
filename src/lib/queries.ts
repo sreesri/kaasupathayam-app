@@ -7,9 +7,7 @@ import type {
   BudgetStatus,
   Category,
   CategoryKind,
-  Frequency,
   Household,
-  Recurring,
   Scope,
   Summary,
   Transaction,
@@ -72,12 +70,6 @@ export const useBudgetStatus = (scope: Scope, month: string) =>
     queryFn: () => api<BudgetStatus[]>('/budgets/status', { query: { scope, month } }),
   });
 
-export const useRecurring = (scope: Scope = 'me') =>
-  useQuery({
-    queryKey: ['recurring', scope],
-    queryFn: () => api<Recurring[]>('/recurring', { query: { scope } }),
-  });
-
 // --- writes ---
 
 /** Balances, budgets and reports all derive from transactions, so any write refreshes everything. */
@@ -137,24 +129,6 @@ export const useCreateBudget = () =>
 
 export const useDeleteBudget = () =>
   useWrite((id: string) => api(`/budgets/${id}`, { method: 'DELETE' }));
-
-export const useCreateRecurring = () =>
-  useWrite(
-    (body: Omit<TransactionInput, 'occurred_on'> & {
-      frequency: Frequency;
-      interval: number;
-      start_date: string;
-      end_date?: string | null;
-    }) => api<Recurring>('/recurring', { method: 'POST', body }),
-  );
-
-export const useUpdateRecurring = () =>
-  useWrite(({ id, ...body }: { id: string; active?: boolean }) =>
-    api<Recurring>(`/recurring/${id}`, { method: 'PATCH', body }),
-  );
-
-export const useDeleteRecurring = () =>
-  useWrite((id: string) => api(`/recurring/${id}`, { method: 'DELETE' }));
 
 export const useCreateHousehold = () =>
   useWrite((body: { name: string; currency: string }) =>

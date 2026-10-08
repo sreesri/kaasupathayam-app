@@ -9,19 +9,16 @@ import { useColors } from '@/lib/theme';
 
 export interface DateFieldProps {
   label: string;
-  /** YYYY-MM-DD, or null when an optional date isn't set. */
-  value: string | null;
-  onChange: (value: string | null) => void;
-  /** Allows clearing the date (e.g. a recurring entry's end date). */
-  optional?: boolean;
-  placeholder?: string;
+  /** YYYY-MM-DD */
+  value: string;
+  onChange: (value: string) => void;
 }
 
-export function DateField({ label, value, onChange, optional, placeholder }: DateFieldProps) {
+export function DateField({ label, value, onChange }: DateFieldProps) {
   const c = useColors();
   const open = () =>
     DateTimePickerAndroid.open({
-      value: value ? fromISODate(value) : new Date(),
+      value: fromISODate(value),
       mode: 'date',
       onValueChange: (_event, date) => onChange(toISODate(date)),
     });
@@ -29,36 +26,27 @@ export function DateField({ label, value, onChange, optional, placeholder }: Dat
   return (
     <View style={{ gap: 6 }}>
       <Label>{label}</Label>
-      <View style={[styles.field, { borderColor: c.border, backgroundColor: c.card }]}>
-        <Pressable
-          onPress={open}
-          accessibilityRole="button"
-          accessibilityLabel={`${label}: ${value ? longDateLabel(value) : (placeholder ?? 'not set')}`}
-          accessibilityHint="Opens a calendar"
-          style={styles.press}
-        >
-          <Ionicons name="calendar-outline" size={20} color={c.primary} />
-          <Text style={{ flex: 1, fontSize: 16, color: value ? c.text : c.muted }}>
-            {value ? longDateLabel(value) : (placeholder ?? 'Choose a date')}
-          </Text>
-        </Pressable>
-        {optional && value && (
-          <Pressable
-            onPress={() => onChange(null)}
-            accessibilityRole="button"
-            accessibilityLabel={`Clear ${label}`}
-            hitSlop={10}
-            style={{ paddingHorizontal: 12 }}
-          >
-            <Ionicons name="close-circle" size={20} color={c.muted} />
-          </Pressable>
-        )}
-      </View>
+      <Pressable
+        onPress={open}
+        accessibilityRole="button"
+        accessibilityLabel={`${label}: ${longDateLabel(value)}`}
+        accessibilityHint="Opens a calendar"
+        style={[styles.field, { borderColor: c.border, backgroundColor: c.card }]}
+      >
+        <Ionicons name="calendar-outline" size={20} color={c.primary} />
+        <Text style={{ flex: 1, fontSize: 16, color: c.text }}>{longDateLabel(value)}</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  field: { borderWidth: 1, borderRadius: 12, flexDirection: 'row', alignItems: 'center' },
-  press: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12 },
+  field: {
+    borderWidth: 1,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 12,
+  },
 });

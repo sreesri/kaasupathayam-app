@@ -23,7 +23,6 @@ export function TransactionRow({ txn, showMember }: { txn: Transaction; showMemb
     dateLabel(txn.occurred_on),
     account,
     showMember ? look.member(txn.user_id)?.name : null,
-    txn.recurring_id ? 'Recurring' : null,
     txn.note,
   ].filter(Boolean);
 

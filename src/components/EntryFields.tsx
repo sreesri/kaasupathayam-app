@@ -33,7 +33,7 @@ export function draftError(d: EntryDraft): string | null {
   return null;
 }
 
-/** The API body shared by one-off and recurring entries. */
+/** The draft as the API's transaction body (minus the date). */
 export function draftBody(d: EntryDraft) {
   const transfer = d.type === 'transfer';
   return {
@@ -46,8 +46,8 @@ export function draftBody(d: EntryDraft) {
   };
 }
 
-/** Type, amount, account and category/destination inputs shared by the transaction and
- *  recurring forms. `lockType` hides the type switch when editing. */
+/** Type, amount, account and category/destination inputs of the transaction form.
+ *  `lockType` hides the type switch when editing. */
 export function EntryFields({
   draft,
   onChange,

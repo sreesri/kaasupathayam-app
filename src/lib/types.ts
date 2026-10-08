@@ -4,7 +4,6 @@ export type Role = 'owner' | 'member';
 export type AccountType = 'bank' | 'credit_card' | 'cash' | 'wallet';
 export type CategoryKind = 'income' | 'expense';
 export type TxnType = 'income' | 'expense' | 'transfer';
-export type Frequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 export interface User {
   id: string;
@@ -57,7 +56,6 @@ export interface Transaction {
   category_id: string | null;
   occurred_on: string;
   note: string | null;
-  recurring_id: string | null;
 }
 
 export interface TransactionInput {
@@ -77,23 +75,6 @@ export interface BudgetStatus {
   amount: string;
   spent: string;
   remaining: string;
-}
-
-export interface Recurring {
-  id: string;
-  user_id: string;
-  type: TxnType;
-  amount: string;
-  account_id: string;
-  to_account_id: string | null;
-  category_id: string | null;
-  note: string | null;
-  frequency: Frequency;
-  interval: number;
-  start_date: string;
-  end_date: string | null;
-  next_date: string | null;
-  active: boolean;
 }
 
 export interface Summary {

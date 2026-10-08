@@ -6,7 +6,7 @@ import type { DateFieldProps } from './DateField';
 import { Label } from './ui';
 import { useColors } from '@/lib/theme';
 
-export function DateField({ label, value, onChange, optional }: DateFieldProps) {
+export function DateField({ label, value, onChange }: DateFieldProps) {
   const c = useColors();
   const dark = useColorScheme() === 'dark';
   return (
@@ -14,15 +14,11 @@ export function DateField({ label, value, onChange, optional }: DateFieldProps) 
       <Label>{label}</Label>
       {createElement('input', {
         type: 'date',
-        value: value ?? '',
-        required: !optional,
+        value,
+        required: true,
         'aria-label': label,
-        onChange: (e: { target: { value: string } }) => {
-          const v = e.target.value;
-          // Required dates can't be emptied; the browser's clear button is ignored for them.
-          if (v) onChange(v);
-          else if (optional) onChange(null);
-        },
+        // Ignore the browser's clear button: a transaction always has a date.
+        onChange: (e: { target: { value: string } }) => e.target.value && onChange(e.target.value),
         style: {
           border: `1px solid ${c.border}`,
           borderRadius: 12,

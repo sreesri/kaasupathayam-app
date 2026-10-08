@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 
 import { TransactionRow } from '@/components/TransactionRow';
-import { Button, Card, Empty, Fab, Loading, MonthPicker, Screen } from '@/components/ui';
+import { Card, Empty, Fab, Loading, MonthPicker, Screen } from '@/components/ui';
 import { currentMonth, monthLabel, monthRange, shiftMonth } from '@/lib/format';
 import { useTransactions } from '@/lib/queries';
 
@@ -22,11 +22,6 @@ export default function Transactions() {
         {data?.length === 0 && <Empty>No transactions this month.</Empty>}
         {data?.map((t) => <TransactionRow key={t.id} txn={t} />)}
       </Card>
-      <Button
-        title="Recurring income & expenses"
-        variant="secondary"
-        onPress={() => router.push('/recurring')}
-      />
     </Screen>
   );
 }
