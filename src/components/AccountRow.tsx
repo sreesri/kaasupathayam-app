@@ -15,17 +15,14 @@ const ICON: Record<AccountType, React.ComponentProps<typeof Ionicons>['name']> =
 };
 
 /** An account inside a Group. Cards show what's owed and how much of the limit is used.
- *  `owner` adds whose account it is (Household tab); `editable` makes the row open the
- *  account screen, which only the owner can use. */
+ *  `editable` makes the row open the account screen, which only the owner can use. */
 export function AccountRow({
   account: a,
   currency,
-  owner,
   editable = true,
 }: {
   account: Account;
   currency: string;
-  owner?: string;
   editable?: boolean;
 }) {
   const c = useColors();
@@ -42,7 +39,7 @@ export function AccountRow({
       disabled={!editable}
       onPress={() => router.push({ pathname: '/account', params: { id: a.id } })}
       accessibilityRole={editable ? 'button' : undefined}
-      accessibilityLabel={`${a.name}${owner ? `, ${owner}` : ''}, ${ACCOUNT_TYPE_LABEL[a.type]}, ${amount}${editable ? '. Edit' : ''}`}
+      accessibilityLabel={`${a.name}, ${ACCOUNT_TYPE_LABEL[a.type]}, ${amount}${editable ? '. Edit' : ''}`}
       style={({ pressed }) => [{ padding: 14, gap: 10 }, pressed && { opacity: 0.6 }]}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
@@ -61,7 +58,7 @@ export function AccountRow({
         <View style={{ flex: 1 }}>
           <Body bold>{a.name}</Body>
           <Body muted size={13}>
-            {owner ? `${owner} · ${detail}` : detail}
+            {detail}
           </Body>
         </View>
         <View style={{ alignItems: 'flex-end' }}>

@@ -50,10 +50,6 @@ export default function HouseholdTab() {
   if (!household) return <Loading />;
   const currency = household.currency;
   const s = summary.data;
-  const nameOf = (id: string) => {
-    const m = household.members.find((x) => x.id === id);
-    return m ? (m.id === me.id ? 'You' : m.name.split(' ')[0]) : 'Former member';
-  };
 
   return (
     <Screen>
@@ -96,22 +92,43 @@ export default function HouseholdTab() {
         <TrendReport scope="household" />
       )}
 
-      <GroupLabel>Everyone&apos;s accounts</GroupLabel>
-      {accounts.length === 0 ? (
-        <Empty>No accounts yet.</Empty>
-      ) : (
-        <Group>
-          {accounts.map((a) => (
-            <AccountRow
-              key={a.id}
-              account={a}
-              currency={currency}
-              owner={nameOf(a.owner_id)}
-              editable={a.owner_id === me.id}
-            />
-          ))}
-        </Group>
-      )}
+      <GroupLabel>Accounts</GroupLabel>
+      {household.members.map((m) => {
+        const owned = accounts.filter((a) => a.owner_id === m.id);
+        const net = owned.reduce((sum, a) => sum + Number(a.balance), 0);
+        return (
+          // One card per member: who, their net balance, then their accounts.
+          <Group key={m.id}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
+              <MemberAvatar name={m.name} />
+              <View style={{ flex: 1 }}>
+                <Body bold>
+                  {m.name}
+                  {m.id === me.id ? ' (you)' : ''}
+                </Body>
+                <Body muted size={13}>
+                  {owned.length === 0
+                    ? 'No accounts yet'
+                    : `${owned.length} ${owned.length === 1 ? 'account' : 'accounts'}`}
+                </Body>
+              </View>
+              {owned.length > 0 && (
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Body bold color={net < 0 ? c.expense : c.text}>
+                    {moneyShort(net, currency)}
+                  </Body>
+                  <Body muted size={12}>
+                    net balance
+                  </Body>
+                </View>
+              )}
+            </View>
+            {owned.map((a) => (
+              <AccountRow key={a.id} account={a} currency={currency} editable={m.id === me.id} />
+            ))}
+          </Group>
+        );
+      })}
 
       <GroupLabel>Transactions</GroupLabel>
       <Group>
@@ -161,25 +178,7 @@ function MemberBreakdown({
         {rows.map(({ m, spent, income }) => (
           <View key={m.id} style={{ padding: 14, gap: 10 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: c.track,
-                }}
-              >
-                <Text style={{ color: c.primary, fontFamily: fonts.display, fontSize: 14 }}>
-                  {m.name
-                    .split(' ')
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()}
-                </Text>
-              </View>
+              <MemberAvatar name={m.name} />
               <View style={{ flex: 1 }}>
                 <Body bold>
                   {m.name}
@@ -203,6 +202,31 @@ function MemberBreakdown({
       <Body muted size={13}>
         Invite more people from Settings (the gear at the top).
       </Body>
+    </View>
+  );
+}
+
+/** A member's initials on a soft circle. */
+function MemberAvatar({ name }: { name: string }) {
+  const c = useColors();
+  const initials = name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+  return (
+    <View
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: c.track,
+      }}
+    >
+      <Text style={{ color: c.primary, fontFamily: fonts.display, fontSize: 14 }}>{initials}</Text>
     </View>
   );
 }
