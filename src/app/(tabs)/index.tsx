@@ -31,7 +31,7 @@ export default function Home() {
             onPrev={() => setMonth(shiftMonth(month, -1))}
             onNext={() => setMonth(shiftMonth(month, 1))}
           />
-          <SummaryReport scope="me" start={start} end={end} />
+          <SummaryReport scope="me" start={start} end={end} categoryChart="donut" />
           <Card>
             <Label>Recent</Label>
             {recent.data?.length === 0 && <Empty>Nothing logged this month.</Empty>}

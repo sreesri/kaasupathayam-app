@@ -1,7 +1,8 @@
 import { Text, View } from 'react-native';
 
+import { SpendingDonut } from './SpendingDonut';
 import { Body, Card, Label, Loading, ProgressBar, Row } from './ui';
-import { monthLabel, money } from '@/lib/format';
+import { fromISODate, monthLabel, money } from '@/lib/format';
 import { useLookups, useSummary, useTrend } from '@/lib/queries';
 import { fonts, useColors } from '@/lib/theme';
 import type { Scope } from '@/lib/types';
@@ -18,7 +19,18 @@ function Tile({ label, value, color }: { label: string; value: string; color: st
 }
 
 /** Income / expense / net for a range, spending by category, and (household) by member. */
-export function SummaryReport({ scope, start, end }: { scope: Scope; start: string; end: string }) {
+export function SummaryReport({
+  scope,
+  start,
+  end,
+  categoryChart = 'bars',
+}: {
+  scope: Scope;
+  start: string;
+  end: string;
+  /** Home shows a donut; the Household tab keeps the full ranked bar list. */
+  categoryChart?: 'bars' | 'donut';
+}) {
   const c = useColors();
   const look = useLookups();
   const { data, isLoading } = useSummary(scope, start, end);
@@ -56,7 +68,17 @@ export function SummaryReport({ scope, start, end }: { scope: Scope; start: stri
 
       <Card>
         <Label>Spending by category</Label>
-        {expenses.length === 0 ? (
+        {categoryChart === 'donut' ? (
+          <SpendingDonut
+            currency={look.currency}
+            period={fromISODate(start).toLocaleDateString(undefined, { month: 'long' })}
+            items={expenses.map((x) => ({
+              key: x.category_id ?? 'none',
+              name: look.category(x.category_id)?.name ?? 'Uncategorised',
+              total: Number(x.total),
+            }))}
+          />
+        ) : expenses.length === 0 ? (
           <Body muted>No spending yet.</Body>
         ) : (
           expenses.map((x) => (

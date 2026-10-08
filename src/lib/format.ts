@@ -41,6 +41,20 @@ export function money(amount: string | number, currency: string): string {
   }
 }
 
+/** Whole currency units, for headline numbers where paise are noise. */
+export function moneyShort(amount: string | number, currency: string): string {
+  const value = typeof amount === 'string' ? Number(amount) : amount;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    return `${currency} ${Math.round(value)}`;
+  }
+}
+
 export const ACCOUNT_TYPE_LABEL = {
   bank: 'Bank account',
   credit_card: 'Credit card',
