@@ -5,6 +5,7 @@ import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { MonthButton } from '@/components/MonthButton';
 import { TrendReport } from '@/components/Reports';
 import { SpendingDonut } from '@/components/SpendingDonut';
+import { SpendingHero } from '@/components/SpendingHero';
 import { TransactionRow } from '@/components/TransactionRow';
 import {
   Body,
@@ -14,12 +15,11 @@ import {
   Fab,
   Group,
   Loading,
-  ProgressBar,
   Row,
   SegmentedControl,
   Screen,
 } from '@/components/ui';
-import { currentMonth, fromISODate, monthRange, moneyShort } from '@/lib/format';
+import { currentMonth, fromISODate, monthRange } from '@/lib/format';
 import { useAccounts, useLookups, useSummary, useTransactions } from '@/lib/queries';
 import { fonts, useColors } from '@/lib/theme';
 
@@ -50,9 +50,6 @@ export default function Home() {
   }
 
   const s = summary.data;
-  const income = Number(s?.income ?? 0);
-  const spent = Number(s?.expense ?? 0);
-  const net = income - spent;
 
   // Columns only flex side by side on wide screens; on phones `flex: 1` would let them shrink
   // below their content and overlap the next section.
@@ -60,33 +57,7 @@ export default function Home() {
 
   const overview = (
     <View style={[{ gap: 16 }, column]}>
-      <View style={{ paddingHorizontal: 4, gap: 2 }}>
-        <Body muted size={14}>
-          Spent this month
-        </Body>
-        {s ? (
-          <Text style={{ color: c.text, fontFamily: fonts.display, fontSize: 44, letterSpacing: -0.5 }}>
-            {moneyShort(spent, look.currency)}
-          </Text>
-        ) : (
-          <Loading />
-        )}
-        {income > 0 && (
-          <View style={{ marginTop: 8 }}>
-            <ProgressBar ratio={spent / income} color={net < 0 ? c.expense : c.primary} />
-          </View>
-        )}
-        <Row style={{ justifyContent: 'space-between', marginTop: 6 }}>
-          <Body muted size={14}>
-            of {moneyShort(income, look.currency)} income
-          </Body>
-          <Body bold size={14} color={net < 0 ? c.expense : c.income}>
-            {net < 0
-              ? `${moneyShort(-net, look.currency)} over`
-              : `${moneyShort(net, look.currency)} left`}
-          </Body>
-        </Row>
-      </View>
+      <SpendingHero label="Spent this month" summary={s} currency={look.currency} />
 
       <SegmentedControl
         accessibilityLabel="Breakdown"
