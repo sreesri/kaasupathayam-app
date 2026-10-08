@@ -32,13 +32,6 @@ export function dateLabel(iso: string): string {
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
-export function isValidISODate(s: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-  const [y, m, d] = s.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.getMonth() === m - 1 && date.getDate() === d;
-}
-
 export function money(amount: string | number, currency: string): string {
   const value = typeof amount === 'string' ? Number(amount) : amount;
   try {
@@ -54,3 +47,21 @@ export const ACCOUNT_TYPE_LABEL = {
   cash: 'Cash',
   wallet: 'Wallet / UPI',
 } as const;
+
+export function fromISODate(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** "Today · Wed, 8 Oct 2026" style label for date fields. */
+export function longDateLabel(iso: string): string {
+  const full = fromISODate(iso).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const yesterday = toISODate(new Date(Date.now() - 86_400_000));
+  const prefix = iso === today() ? 'Today · ' : iso === yesterday ? 'Yesterday · ' : '';
+  return prefix + full;
+}

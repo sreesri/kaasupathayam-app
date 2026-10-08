@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 
+import { Select } from './Select';
 import { Chips, Field } from './ui';
 import { useUser } from '@/lib/auth';
 import { useAccounts, useCategories, useHousehold } from '@/lib/queries';
@@ -103,8 +104,9 @@ export function EntryFields({
           onChange={(to_account_id) => set({ to_account_id })}
         />
       ) : (
-        <Chips
+        <Select
           label="Category"
+          placeholder={draft.type === 'income' ? 'Choose an income category' : 'Choose a category'}
           options={categories
             .filter((c) => c.kind === draft.type)
             .map((c) => ({ value: c.id, label: c.name }))}

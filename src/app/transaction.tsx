@@ -2,8 +2,9 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { draftBody, draftError, emptyDraft, EntryFields, type EntryDraft } from '@/components/EntryFields';
-import { Button, Card, Chips, ErrorText, Field, Loading, Screen } from '@/components/ui';
-import { isValidISODate, today, toISODate } from '@/lib/format';
+import { DateField } from '@/components/DateField';
+import { Button, Card, ErrorText, Loading, Screen } from '@/components/ui';
+import { today } from '@/lib/format';
 import {
   useCreateTransaction,
   useDeleteTransaction,
@@ -11,8 +12,6 @@ import {
   useUpdateTransaction,
 } from '@/lib/queries';
 import type { Transaction } from '@/lib/types';
-
-const yesterday = () => toISODate(new Date(Date.now() - 86_400_000));
 
 /** Add a transaction, or edit one when opened with `?id=`. */
 export default function TransactionScreen() {
@@ -43,7 +42,7 @@ function TransactionForm({ existing }: { existing?: Transaction }) {
   const [date, setDate] = useState(existing?.occurred_on ?? today());
   const [error, setError] = useState<unknown>(null);
   const save = () => {
-    const problem = draftError(draft) ?? (isValidISODate(date) ? null : 'Date must be YYYY-MM-DD');
+    const problem = draftError(draft);
     if (problem) return setError(problem);
     const body = { ...draftBody(draft), occurred_on: date };
     const done = { onSuccess: () => router.back(), onError: setError };
@@ -56,16 +55,7 @@ function TransactionForm({ existing }: { existing?: Transaction }) {
       <Stack.Screen options={{ title: id ? 'Edit transaction' : 'Add transaction' }} />
       <Card>
         <EntryFields draft={draft} onChange={setDraft} lockType={!!id} />
-        <Chips
-          label="Date"
-          options={[
-            { value: today(), label: 'Today' },
-            { value: yesterday(), label: 'Yesterday' },
-          ]}
-          value={date}
-          onChange={setDate}
-        />
-        <Field label="Or enter a date" value={date} onChangeText={setDate} placeholder="YYYY-MM-DD" />
+        <DateField label="Date" value={date} onChange={(d) => d && setDate(d)} />
         <ErrorText error={error} />
         <Button title="Save" onPress={save} loading={create.isPending || update.isPending} />
         {id && (
