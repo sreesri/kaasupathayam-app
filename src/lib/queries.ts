@@ -26,8 +26,14 @@ export const useAccounts = (scope: Scope = 'me', includeArchived = false) =>
       api<Account[]>('/accounts', { query: { scope, include_archived: includeArchived } }),
   });
 
-export const useCategories = () =>
-  useQuery({ queryKey: ['categories'], queryFn: () => api<Category[]>('/categories') });
+/** Active categories for pickers; `includeRemoved` also returns removed (archived) ones, which
+ *  past transactions still point at. */
+export const useCategories = (includeRemoved = false) =>
+  useQuery({
+    queryKey: ['categories', includeRemoved],
+    queryFn: () =>
+      api<Category[]>('/categories', { query: { include_archived: includeRemoved } }),
+  });
 
 export interface TransactionFilters {
   scope: Scope;
@@ -111,8 +117,14 @@ export const useDeleteAccount = () =>
   useWrite((id: string) => api(`/accounts/${id}`, { method: 'DELETE' }));
 
 export const useCreateCategory = () =>
-  useWrite((body: { name: string; kind: CategoryKind }) =>
+  useWrite((body: { name: string; kind: CategoryKind; icon: string }) =>
     api<Category>('/categories', { method: 'POST', body }),
+  );
+
+/** Removing archives the category: new transactions can't use it, past ones keep it. */
+export const useRemoveCategory = () =>
+  useWrite((id: string) =>
+    api<Category>(`/categories/${id}`, { method: 'PATCH', body: { archived: true } }),
   );
 
 export const useCreateHousehold = () =>
@@ -134,7 +146,8 @@ export const useRegenerateInvite = () =>
 export function useLookups() {
   const household = useHousehold();
   const accounts = useAccounts('household');
-  const categories = useCategories();
+  // Include removed categories so past transactions still show their names and icons.
+  const categories = useCategories(true);
   return {
     currency: household.data?.currency ?? 'INR',
     member: (id: string) => household.data?.members.find((m) => m.id === id),

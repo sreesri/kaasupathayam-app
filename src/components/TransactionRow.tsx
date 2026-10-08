@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { CategoryIcon } from './CategoryIcon';
 import { Body } from './ui';
 import { useUser } from '@/lib/auth';
 import { dateLabel, money } from '@/lib/format';
@@ -35,6 +36,10 @@ export function TransactionRow({ txn, showMember }: { txn: Transaction; showMemb
       onPress={() => router.push({ pathname: '/transaction', params: { id: txn.id } })}
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
     >
+      <CategoryIcon
+        name={txn.type === 'transfer' ? 'swap-horizontal-outline' : look.category(txn.category_id)?.icon}
+        size={36}
+      />
       <View style={{ flex: 1, gap: 2 }}>
         <Body bold>{title}</Body>
         <Body muted size={13}>

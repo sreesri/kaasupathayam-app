@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { CategoryIcon } from './CategoryIcon';
 import { Sheet } from './Sheet';
 import { GroupRow } from './ui';
 import { fonts, useColors } from '@/lib/theme';
@@ -11,8 +12,10 @@ export interface SelectOption<T extends string> {
   label: string;
   /** Secondary text on the right of the option, e.g. a balance. */
   meta?: string;
-  /** Small colour mark before the label (category colours). */
+  /** Small colour mark before the label. */
   color?: string;
+  /** Category icon before the label. */
+  icon?: string;
 }
 
 const SEARCH_FROM = 9; // long lists (categories) get a search box
@@ -53,6 +56,7 @@ export function Select<T extends string>({
         accessibilityLabel={`${label}: ${selected?.label ?? 'none selected'}`}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {selected?.icon ? <CategoryIcon name={selected.icon} size={28} /> : null}
           {selected?.color ? (
             <View style={[styles.swatch, { backgroundColor: selected.color }]} />
           ) : null}
@@ -102,6 +106,7 @@ export function Select<T extends string>({
                   pressed && { opacity: 0.6 },
                 ]}
               >
+                {o.icon ? <CategoryIcon name={o.icon} size={30} /> : null}
                 {o.color ? <View style={[styles.swatch, { backgroundColor: o.color }]} /> : null}
                 <Text
                   style={{

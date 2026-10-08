@@ -43,6 +43,8 @@ export interface Category {
   id: string;
   name: string;
   kind: CategoryKind;
+  /** Ionicons glyph name. */
+  icon: string;
   archived: boolean;
 }
 

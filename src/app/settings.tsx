@@ -1,9 +1,21 @@
+import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useState } from 'react';
 import { Pressable, Text } from 'react-native';
 
 import { UpdateSettings } from '@/components/AppUpdates';
-import { Body, Button, Card, ErrorText, Label, Loading, Row, Screen } from '@/components/ui';
+import {
+  Body,
+  Button,
+  Card,
+  ErrorText,
+  Group,
+  GroupRow,
+  Label,
+  Loading,
+  Row,
+  Screen,
+} from '@/components/ui';
 import { useAuth, useUser } from '@/lib/auth';
 import { useHousehold, useRegenerateInvite } from '@/lib/queries';
 import { fonts, useColors } from '@/lib/theme';
@@ -89,6 +101,18 @@ export default function Settings() {
           {me.email}
         </Body>
       </Card>
+      <Group>
+        <GroupRow
+          label="Categories"
+          chevron="forward"
+          onPress={() => router.push('/categories')}
+          accessibilityLabel="Manage categories"
+        >
+          <Body muted size={14}>
+            Add or remove
+          </Body>
+        </GroupRow>
+      </Group>
       <UpdateSettings />
       <Button title="Sign out" variant="secondary" onPress={signOut} />
     </Screen>

@@ -173,7 +173,7 @@ export function EntryFields({
             placeholder="Choose a category"
             options={categories
               .filter((cat) => cat.kind === draft.type)
-              .map((cat) => ({ value: cat.id, label: cat.name }))}
+              .map((cat) => ({ value: cat.id, label: cat.name, icon: cat.icon }))}
             value={draft.category_id}
             onChange={(category_id) => set({ category_id })}
           />

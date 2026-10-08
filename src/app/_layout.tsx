@@ -77,6 +77,7 @@ function RootNavigator() {
         <Stack.Screen name="transaction" options={{ presentation: 'modal', title: 'Transaction' }} />
         <Stack.Screen name="account" options={{ presentation: 'modal', title: 'Account' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+        <Stack.Screen name="categories" options={{ title: 'Categories' }} />
       </Stack.Protected>
     </Stack>
   );
