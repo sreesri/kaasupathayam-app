@@ -1,78 +1,112 @@
 import { router } from 'expo-router';
-import { Pressable, View } from 'react-native';
 import { useState } from 'react';
+import { Pressable, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
-import { Body, Button, Card, Chips, Empty, Loading, MonthPicker, ProgressBar, Row, Screen } from '@/components/ui';
-import { currentMonth, monthLabel, money, shiftMonth } from '@/lib/format';
-import { useBudgetStatus, useDeleteBudget, useLookups } from '@/lib/queries';
+import { MonthButton } from '@/components/MonthButton';
+import { Body, Button, Empty, Group, Loading, SegmentedControl, Screen } from '@/components/ui';
+import { currentMonth, moneyShort } from '@/lib/format';
+import { useBudgetStatus, useLookups } from '@/lib/queries';
 import { useColors } from '@/lib/theme';
-import type { Scope } from '@/lib/types';
+import type { BudgetStatus, Scope } from '@/lib/types';
 
 export default function Budgets() {
-  const c = useColors();
-  const look = useLookups();
   const [scope, setScope] = useState<Scope>('me');
   const [month, setMonth] = useState(currentMonth());
   const { data, isLoading } = useBudgetStatus(scope, month);
-  const remove = useDeleteBudget();
 
   return (
     <Screen>
-      <Chips
+      <MonthButton month={month} onChange={setMonth} />
+      <SegmentedControl
+        accessibilityLabel="Whose budgets"
         options={[
-          { value: 'me', label: 'My budgets' },
-          { value: 'household', label: 'Household budgets' },
+          { value: 'me', label: 'Mine' },
+          { value: 'household', label: 'Household' },
         ]}
         value={scope}
         onChange={setScope}
       />
-      <Body muted size={13}>
+      <Body muted size={14}>
         {scope === 'me'
           ? 'Monthly limits on your own spending.'
-          : "Monthly limits on everyone's combined spending. Any member can edit these."}
+          : "Everyone's spending counts toward these. Any member can change them."}
       </Body>
-      <MonthPicker
-        label={monthLabel(month)}
-        onPrev={() => setMonth(shiftMonth(month, -1))}
-        onNext={() => setMonth(shiftMonth(month, 1))}
-      />
       {isLoading && <Loading />}
       {data?.length === 0 && <Empty>No budgets yet.</Empty>}
-      {data?.map((b) => {
-        const ratio = Number(b.spent) / Number(b.amount);
-        const color = ratio > 1 ? c.expense : ratio > 0.8 ? c.accent : c.primary;
-        return (
-          <Card key={b.id}>
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Body bold>{look.category(b.category_id)?.name ?? 'Category'}</Body>
-              <Body>
-                {money(b.spent, look.currency)} / {money(b.amount, look.currency)}
-              </Body>
-            </Row>
-            <ProgressBar ratio={ratio} color={color} />
-            <Row style={{ justifyContent: 'space-between' }}>
-              <Body muted size={13} color={Number(b.remaining) < 0 ? c.expense : undefined}>
-                {Number(b.remaining) < 0
-                  ? `${money(-Number(b.remaining), look.currency)} over`
-                  : `${money(b.remaining, look.currency)} left`}
-              </Body>
-              <Pressable onPress={() => remove.mutate(b.id)} hitSlop={8}>
-                <Body muted size={13}>
-                  Remove
-                </Body>
-              </Pressable>
-            </Row>
-          </Card>
-        );
-      })}
-      <View>
-        <Button
-          title="Add budget"
-          onPress={() =>
-            router.push({ pathname: '/budget', params: { shared: scope === 'household' ? '1' : '0' } })
-          }
-        />
-      </View>
+      {!!data?.length && (
+        <Group>
+          {data.map((b) => (
+            <BudgetRow key={b.id} budget={b} scope={scope} />
+          ))}
+        </Group>
+      )}
+      <Button
+        title={scope === 'me' ? 'Add budget' : 'Add household budget'}
+        variant="secondary"
+        onPress={() =>
+          router.push({ pathname: '/budget', params: { shared: scope === 'household' ? '1' : '0' } })
+        }
+      />
     </Screen>
+  );
+}
+
+const RING = 18;
+const CIRC = 2 * Math.PI * RING;
+
+/** Ring + status in words, so "near" and "over" never rely on colour alone. */
+function BudgetRow({ budget: b, scope }: { budget: BudgetStatus; scope: Scope }) {
+  const c = useColors();
+  const look = useLookups();
+  const ratio = Number(b.spent) / Number(b.amount);
+  const remaining = Number(b.remaining);
+  const tone = ratio > 1 ? c.expense : ratio > 0.8 ? c.warn : c.income;
+  const ring = ratio > 1 ? c.expense : ratio > 0.8 ? c.chart[1] : c.primary;
+  const status =
+    ratio > 1
+      ? `● Over by ${moneyShort(-remaining, look.currency)}`
+      : ratio > 0.8
+        ? `▲ Near the limit · ${moneyShort(remaining, look.currency)} left`
+        : `On track · ${moneyShort(remaining, look.currency)} left`;
+  const name = look.category(b.category_id)?.name ?? 'Category';
+
+  return (
+    <Pressable
+      onPress={() => router.push({ pathname: '/budget', params: { id: b.id, scope } })}
+      accessibilityRole="button"
+      accessibilityLabel={`${name}: ${moneyShort(b.spent, look.currency)} of ${moneyShort(b.amount, look.currency)}. ${status}. Edit`}
+      style={({ pressed }) => [
+        { flexDirection: 'row', alignItems: 'center', gap: 14, minHeight: 76, paddingHorizontal: 14 },
+        pressed && { opacity: 0.6 },
+      ]}
+    >
+      <Svg width={44} height={44} viewBox="0 0 44 44">
+        <Circle cx={22} cy={22} r={RING} stroke={c.track} strokeWidth={6} fill="none" />
+        <Circle
+          cx={22}
+          cy={22}
+          r={RING}
+          stroke={ring}
+          strokeWidth={6}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={`${Math.min(ratio, 1) * CIRC} ${CIRC}`}
+          transform="rotate(-90 22 22)"
+        />
+      </Svg>
+      <View style={{ flex: 1 }}>
+        <Body bold>{name}</Body>
+        <Body size={13} color={tone}>
+          {status}
+        </Body>
+      </View>
+      <View style={{ alignItems: 'flex-end' }}>
+        <Body bold>{moneyShort(b.spent, look.currency)}</Body>
+        <Body muted size={12}>
+          of {moneyShort(b.amount, look.currency)}
+        </Body>
+      </View>
+    </Pressable>
   );
 }

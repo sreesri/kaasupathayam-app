@@ -41,6 +41,18 @@ export function money(amount: string | number, currency: string): string {
   }
 }
 
+/** The currency's symbol on its own, e.g. "₹". */
+export function moneySymbol(currency: string): string {
+  try {
+    const part = new Intl.NumberFormat(undefined, { style: 'currency', currency })
+      .formatToParts(0)
+      .find((x) => x.type === 'currency');
+    return part?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
 /** Whole currency units, for headline numbers where paise are noise. */
 export function moneyShort(amount: string | number, currency: string): string {
   const value = typeof amount === 'string' ? Number(amount) : amount;

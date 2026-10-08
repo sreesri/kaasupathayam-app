@@ -130,7 +130,9 @@ export function SpendingDonut({
         </View>
       </View>
 
-      <View>
+      {/* Legend as a two-column grid: name, then amount and share. It is also the data
+          table, so every slice is named without relying on colour. */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 6 }}>
         {slices.map((s, i) => {
           const isSelected = selected?.key === s.key;
           return (
@@ -141,25 +143,26 @@ export function SpendingDonut({
               accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`${s.name}, ${money(s.total, currency)}, ${pct(s.total)}`}
               style={({ pressed }) => ({
+                width: '50%',
                 flexDirection: 'row',
-                alignItems: 'center',
-                gap: 10,
-                minHeight: 44,
+                alignItems: 'flex-start',
+                gap: 8,
+                minHeight: 48,
                 paddingHorizontal: 6,
-                borderTopWidth: 1,
-                borderTopColor: c.border,
-                borderRadius: 6,
+                paddingVertical: 4,
+                borderRadius: 8,
                 backgroundColor: isSelected ? c.track : 'transparent',
                 opacity: pressed ? 0.6 : 1,
               })}
             >
-              <View style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: colorOf(i, s) }} />
-              <Body>{s.name}</Body>
-              <View style={{ flex: 1 }} />
-              <Body bold>{money(s.total, currency)}</Body>
-              <View style={{ width: 40, alignItems: 'flex-end' }}>
-                <Body muted size={13}>
-                  {pct(s.total)}
+              <View style={{ width: 10, height: 10, borderRadius: 3, marginTop: 5, backgroundColor: colorOf(i, s) }} />
+              <View style={{ flex: 1 }}>
+                <Body size={14}>{s.name}</Body>
+                <Body bold size={14}>
+                  {moneyShort(s.total, currency)}{' '}
+                  <Body muted size={14}>
+                    {pct(s.total)}
+                  </Body>
                 </Body>
               </View>
             </Pressable>

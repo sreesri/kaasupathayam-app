@@ -1,7 +1,17 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
-import { Body, Button, Card, Chips, ErrorText, Field, Label, Loading, Screen } from '@/components/ui';
+import {
+  Body,
+  Button,
+  Card,
+  ErrorText,
+  Field,
+  Label,
+  Loading,
+  SegmentedControl,
+  Screen,
+} from '@/components/ui';
 import { ApiError } from '@/lib/api';
 import { ACCOUNT_TYPE_LABEL } from '@/lib/format';
 import {
@@ -13,6 +23,14 @@ import {
 import type { Account, AccountType } from '@/lib/types';
 
 const AMOUNT = /^-?\d+(\.\d{1,2})?$/;
+
+/** Short labels that fit four across in the segmented control. */
+const SHORT_TYPE: Record<AccountType, string> = {
+  bank: 'Bank',
+  credit_card: 'Card',
+  cash: 'Cash',
+  wallet: 'Wallet',
+};
 
 /** Cards are entered as "amount owed" but stored as a negative balance, and vice versa. */
 const negate = (s: string) => (s.startsWith('-') ? s.slice(1) : Number(s) === 0 ? s : `-${s}`);
@@ -70,11 +88,11 @@ function AccountForm({ existing }: { existing?: Account }) {
             {ACCOUNT_TYPE_LABEL[existing.type]}
           </Body>
         ) : (
-          <Chips
-            label="Type"
-            options={(Object.keys(ACCOUNT_TYPE_LABEL) as AccountType[]).map((t) => ({
+          <SegmentedControl
+            accessibilityLabel="Account type"
+            options={(Object.keys(SHORT_TYPE) as AccountType[]).map((t) => ({
               value: t,
-              label: ACCOUNT_TYPE_LABEL[t],
+              label: SHORT_TYPE[t],
             }))}
             value={type}
             onChange={setType}
@@ -123,8 +141,33 @@ function AccountForm({ existing }: { existing?: Account }) {
           loading={create.isPending || update.isPending}
         />
       </Card>
+      {existing && <ArchiveCard account={existing} />}
       {existing && <DangerZone account={existing} />}
     </Screen>
+  );
+}
+
+/** Archived accounts drop out of lists and pickers but keep their history. */
+function ArchiveCard({ account }: { account: Account }) {
+  const update = useUpdateAccount();
+  return (
+    <Card>
+      <Label>{account.archived ? 'Archived' : 'Archive'}</Label>
+      <Body muted size={14}>
+        {account.archived
+          ? 'This account is hidden from lists and pickers. Restore it to use it again.'
+          : 'Hide this account from lists and pickers. Its transactions and balance history stay.'}
+      </Body>
+      <Button
+        title={account.archived ? 'Restore account' : 'Archive account'}
+        variant="secondary"
+        loading={update.isPending}
+        onPress={() =>
+          update.mutate({ id: account.id, archived: !account.archived }, { onSuccess: () => router.back() })
+        }
+      />
+      <ErrorText error={update.error} />
+    </Card>
   );
 }
 

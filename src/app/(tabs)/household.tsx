@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { MonthButton } from '@/components/MonthButton';
 import { SummaryReport, TrendReport } from '@/components/Reports';
+import { Select } from '@/components/Select';
 import { TransactionRow } from '@/components/TransactionRow';
 import {
   Body,
   Card,
-  Chips,
   Empty,
+  Group,
+  GroupLabel,
   Label,
-  MonthPicker,
   Row,
   Screen,
   Title,
 } from '@/components/ui';
 import { useUser } from '@/lib/auth';
-import { ACCOUNT_TYPE_LABEL, currentMonth, monthLabel, monthRange, money, shiftMonth } from '@/lib/format';
+import { ACCOUNT_TYPE_LABEL, currentMonth, monthRange, money } from '@/lib/format';
 import { useAccounts, useHousehold, useTransactions } from '@/lib/queries';
 import { useColors } from '@/lib/theme';
 
@@ -44,11 +46,7 @@ export default function HouseholdTab() {
   return (
     <Screen>
       <Title>{household.name}</Title>
-      <MonthPicker
-        label={monthLabel(month)}
-        onPrev={() => setMonth(shiftMonth(month, -1))}
-        onNext={() => setMonth(shiftMonth(month, 1))}
-      />
+      <MonthButton month={month} onChange={setMonth} />
       <SummaryReport scope="household" start={start} end={end} />
       <TrendReport scope="household" />
 
@@ -76,9 +74,11 @@ export default function HouseholdTab() {
         {accounts.length === 0 && <Body muted>No accounts yet.</Body>}
       </Card>
 
-      <Card>
-        <Label>Transactions</Label>
-        <Chips
+      <GroupLabel>Transactions</GroupLabel>
+      <Group>
+        <Select
+          label="Showing"
+          title="Show transactions of"
           options={[
             { value: ALL, label: 'Everyone' },
             ...household.members.map((m) => ({ value: m.id, label: m.name })),
@@ -86,9 +86,9 @@ export default function HouseholdTab() {
           value={member}
           onChange={setMember}
         />
-        {txns.data?.length === 0 && <Empty>No transactions this month.</Empty>}
         {txns.data?.map((t) => <TransactionRow key={t.id} txn={t} showMember />)}
-      </Card>
+      </Group>
+      {txns.data?.length === 0 && <Empty>No transactions this month.</Empty>}
 
       <Card>
         <Label>Members</Label>

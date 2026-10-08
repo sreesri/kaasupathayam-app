@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 
+import { MonthButton } from '@/components/MonthButton';
 import { TransactionRow } from '@/components/TransactionRow';
-import { Card, Empty, Fab, Loading, MonthPicker, Screen } from '@/components/ui';
-import { currentMonth, monthLabel, monthRange, shiftMonth } from '@/lib/format';
+import { Empty, Fab, Group, Loading, Screen } from '@/components/ui';
+import { currentMonth, monthRange } from '@/lib/format';
 import { useTransactions } from '@/lib/queries';
 
 export default function Transactions() {
@@ -12,16 +13,10 @@ export default function Transactions() {
 
   return (
     <Screen footer={<Fab label="Add transaction" onPress={() => router.push('/transaction')} />}>
-      <MonthPicker
-        label={monthLabel(month)}
-        onPrev={() => setMonth(shiftMonth(month, -1))}
-        onNext={() => setMonth(shiftMonth(month, 1))}
-      />
-      <Card>
-        {isLoading && <Loading />}
-        {data?.length === 0 && <Empty>No transactions this month.</Empty>}
-        {data?.map((t) => <TransactionRow key={t.id} txn={t} />)}
-      </Card>
+      <MonthButton month={month} onChange={setMonth} />
+      {isLoading && <Loading />}
+      {data?.length === 0 && <Empty>No transactions this month.</Empty>}
+      {!!data?.length && <Group>{data.map((t) => <TransactionRow key={t.id} txn={t} />)}</Group>}
     </Screen>
   );
 }

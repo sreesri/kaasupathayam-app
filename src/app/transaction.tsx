@@ -2,12 +2,12 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { draftBody, draftError, emptyDraft, EntryFields, type EntryDraft } from '@/components/EntryFields';
-import { DateField } from '@/components/DateField';
-import { Button, Card, ErrorText, Loading, Screen } from '@/components/ui';
-import { today } from '@/lib/format';
+import { Button, ErrorText, Loading, Screen } from '@/components/ui';
+import { moneyShort, today } from '@/lib/format';
 import {
   useCreateTransaction,
   useDeleteTransaction,
+  useHousehold,
   useTransaction,
   useUpdateTransaction,
 } from '@/lib/queries';
@@ -21,17 +21,25 @@ export default function TransactionScreen() {
   return <TransactionForm existing={existing.data} />;
 }
 
+/** "Save ₹2,850 expense": the button confirms what will be recorded. */
+function saveLabel(d: EntryDraft, currency: string, editing: boolean): string {
+  if (editing) return 'Save changes';
+  const amount = Number(d.amount) > 0 ? `${moneyShort(Number(d.amount), currency)} ` : '';
+  return `Save ${amount}${d.type}`;
+}
+
 function TransactionForm({ existing }: { existing?: Transaction }) {
   const id = existing?.id;
   const create = useCreateTransaction();
   const update = useUpdateTransaction();
   const remove = useDeleteTransaction();
+  const currency = useHousehold().data?.currency ?? 'INR';
 
   const [draft, setDraft] = useState<EntryDraft>(
     existing
       ? {
           type: existing.type,
-          amount: existing.amount,
+          amount: existing.amount.replace(/\.00$/, ''),
           account_id: existing.account_id,
           to_account_id: existing.to_account_id,
           category_id: existing.category_id,
@@ -51,22 +59,29 @@ function TransactionForm({ existing }: { existing?: Transaction }) {
   };
 
   return (
-    <Screen>
+    <Screen maxWidth={520}>
       <Stack.Screen options={{ title: id ? 'Edit transaction' : 'Add transaction' }} />
-      <Card>
-        <EntryFields draft={draft} onChange={setDraft} lockType={!!id} />
-        <DateField label="Date" value={date} onChange={setDate} />
-        <ErrorText error={error} />
-        <Button title="Save" onPress={save} loading={create.isPending || update.isPending} />
-        {id && (
-          <Button
-            title="Delete"
-            variant="danger"
-            loading={remove.isPending}
-            onPress={() => remove.mutate(id, { onSuccess: () => router.back(), onError: setError })}
-          />
-        )}
-      </Card>
+      <EntryFields
+        draft={draft}
+        onChange={setDraft}
+        date={date}
+        onDateChange={setDate}
+        lockType={!!id}
+      />
+      <ErrorText error={error} />
+      <Button
+        title={saveLabel(draft, currency, !!id)}
+        onPress={save}
+        loading={create.isPending || update.isPending}
+      />
+      {id && (
+        <Button
+          title="Delete"
+          variant="danger"
+          loading={remove.isPending}
+          onPress={() => remove.mutate(id, { onSuccess: () => router.back(), onError: setError })}
+        />
+      )}
     </Screen>
   );
 }

@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -17,12 +18,20 @@ import { fonts, useColors } from '@/lib/theme';
 const LOGO = require('../../assets/logo.png');
 
 /** Scrollable page body, width-capped so it reads well on desktop web. */
-export function Screen({ children, footer }: { children: React.ReactNode; footer?: React.ReactNode }) {
+export function Screen({
+  children,
+  footer,
+  maxWidth = 720,
+}: {
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  maxWidth?: number;
+}) {
   const c = useColors();
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-        <View style={styles.column}>{children}</View>
+        <View style={[styles.column, { maxWidth }]}>{children}</View>
       </ScrollView>
       {footer}
     </View>
@@ -130,68 +139,109 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
   );
 }
 
-/** Single-select chip group; wraps onto multiple lines. */
-export function Chips<T extends string>({
-  label,
+/** Two to four mutually exclusive options in one control (replaces chips). */
+export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  accessibilityLabel,
 }: {
-  label?: string;
-  options: { value: T; label: string }[];
-  value: T | null;
+  options: { value: T; label: string; color?: string }[];
+  value: T;
   onChange: (value: T) => void;
+  accessibilityLabel: string;
 }) {
   const c = useColors();
   return (
-    <View style={{ gap: 6 }}>
-      {label ? <Label>{label}</Label> : null}
-      <View style={styles.chips}>
-        {options.map((o) => {
-          const selected = o.value === value;
-          return (
-            <Pressable
-              key={o.value}
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
-              onPress={() => onChange(o.value)}
-              style={[
-                styles.chip,
-                {
-                  borderColor: selected ? c.primary : c.border,
-                  backgroundColor: selected ? c.primary : c.card,
-                },
-              ]}
+    <View
+      accessibilityRole="tablist"
+      accessibilityLabel={accessibilityLabel}
+      style={[styles.segments, { backgroundColor: c.track }]}
+    >
+      {options.map((o) => {
+        const selected = o.value === value;
+        return (
+          <Pressable
+            key={o.value}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            onPress={() => onChange(o.value)}
+            style={[
+              styles.segment,
+              selected && [styles.segmentSelected, { backgroundColor: c.card }],
+            ]}
+          >
+            <Text
+              numberOfLines={1}
+              style={{
+                color: selected ? (o.color ?? c.text) : c.muted,
+                fontFamily: selected ? fonts.display : fonts.medium,
+                fontSize: 15,
+              }}
             >
-              <Text
-                style={{
-                  color: selected ? c.primaryText : c.text,
-                  fontSize: 14,
-                  fontFamily: selected ? fonts.semibold : undefined,
-                }}
-              >
-                {o.label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+              {o.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
-export function MonthPicker({ label, onPrev, onNext }: { label: string; onPrev: () => void; onNext: () => void }) {
+/** Section heading above a Group. */
+export function GroupLabel({ children }: { children: React.ReactNode }) {
+  const c = useColors();
+  return <Text style={[styles.groupLabel, { color: c.muted }]}>{children}</Text>;
+}
+
+/** Rows in one rounded container, separated by hairlines (the grouped-list pattern). */
+export function Group({ children }: { children: React.ReactNode }) {
+  const c = useColors();
+  const rows = React.Children.toArray(children).filter(Boolean);
+  return (
+    <View style={[styles.group, { backgroundColor: c.card, borderColor: c.border }]}>
+      {rows.map((row, i) => (
+        <View key={i} style={i > 0 && { borderTopWidth: 1, borderTopColor: c.border }}>
+          {row}
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** A tappable label / value row for use inside a Group. */
+export function GroupRow({
+  label,
+  children,
+  onPress,
+  accessibilityLabel,
+  chevron = 'down',
+}: {
+  label?: string;
+  children: React.ReactNode;
+  onPress?: () => void;
+  accessibilityLabel?: string;
+  chevron?: 'down' | 'forward' | 'none';
+}) {
   const c = useColors();
   return (
-    <Row style={{ justifyContent: 'space-between' }}>
-      <Pressable accessibilityLabel="Previous month" onPress={onPrev} hitSlop={12}>
-        <Ionicons name="chevron-back" size={22} color={c.text} />
-      </Pressable>
-      <Text style={{ color: c.text, fontFamily: fonts.display, fontSize: 18 }}>{label}</Text>
-      <Pressable accessibilityLabel="Next month" onPress={onNext} hitSlop={12}>
-        <Ionicons name="chevron-forward" size={22} color={c.text} />
-      </Pressable>
-    </Row>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => [styles.groupRow, pressed && { opacity: 0.6 }]}
+    >
+      {label ? <Text style={[styles.groupRowLabel, { color: c.muted }]}>{label}</Text> : null}
+      <View style={{ flex: 1 }}>{children}</View>
+      {chevron !== 'none' && onPress ? (
+        <Ionicons
+          name={chevron === 'down' ? 'chevron-down' : 'chevron-forward'}
+          size={18}
+          color={c.muted}
+        />
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -293,16 +343,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 11, fontSize: 16 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  segments: { flexDirection: 'row', padding: 4, borderRadius: 12 },
+  segment: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  segmentSelected: {
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  groupLabel: {
+    fontSize: 12,
+    fontFamily: fonts.medium,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: -8,
+    paddingHorizontal: 4,
+  },
+  group: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  groupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 52,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  groupRowLabel: { width: 84, fontSize: 14 },
   track: { height: 8, borderRadius: 4, overflow: 'hidden' },
   fab: {
     position: 'absolute',
     right: 20,
     bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',

@@ -127,6 +127,11 @@ export const useCreateBudget = () =>
     api('/budgets', { method: 'POST', body }),
   );
 
+export const useUpdateBudget = () =>
+  useWrite(({ id, amount }: { id: string; amount: string }) =>
+    api(`/budgets/${id}`, { method: 'PATCH', body: { amount } }),
+  );
+
 export const useDeleteBudget = () =>
   useWrite((id: string) => api(`/budgets/${id}`, { method: 'DELETE' }));
 

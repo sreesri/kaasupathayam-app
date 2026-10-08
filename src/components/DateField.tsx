@@ -1,11 +1,10 @@
 // Android: the system calendar dialog. Web uses DateField.web.tsx (the browser's date input).
-import { Ionicons } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Text } from 'react-native';
 
-import { Label } from './ui';
+import { GroupRow } from './ui';
 import { fromISODate, longDateLabel, toISODate } from '@/lib/format';
-import { useColors } from '@/lib/theme';
+import { fonts, useColors } from '@/lib/theme';
 
 export interface DateFieldProps {
   label: string;
@@ -14,6 +13,7 @@ export interface DateFieldProps {
   onChange: (value: string) => void;
 }
 
+/** A Group row showing the date; tapping opens the calendar. */
 export function DateField({ label, value, onChange }: DateFieldProps) {
   const c = useColors();
   const open = () =>
@@ -24,29 +24,8 @@ export function DateField({ label, value, onChange }: DateFieldProps) {
     });
 
   return (
-    <View style={{ gap: 6 }}>
-      <Label>{label}</Label>
-      <Pressable
-        onPress={open}
-        accessibilityRole="button"
-        accessibilityLabel={`${label}: ${longDateLabel(value)}`}
-        accessibilityHint="Opens a calendar"
-        style={[styles.field, { borderColor: c.border, backgroundColor: c.card }]}
-      >
-        <Ionicons name="calendar-outline" size={20} color={c.primary} />
-        <Text style={{ flex: 1, fontSize: 16, color: c.text }}>{longDateLabel(value)}</Text>
-      </Pressable>
-    </View>
+    <GroupRow label={label} onPress={open} accessibilityLabel={`${label}: ${longDateLabel(value)}. Change date`}>
+      <Text style={{ fontSize: 16, color: c.text, fontFamily: fonts.semibold }}>{longDateLabel(value)}</Text>
+    </GroupRow>
   );
 }
-
-const styles = StyleSheet.create({
-  field: {
-    borderWidth: 1,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-  },
-});

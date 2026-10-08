@@ -33,7 +33,7 @@ export function TransactionRow({ txn, showMember }: { txn: Transaction; showMemb
     <Pressable
       disabled={!mine}
       onPress={() => router.push({ pathname: '/transaction', params: { id: txn.id } })}
-      style={({ pressed }) => [styles.row, { borderColor: c.border }, pressed && { opacity: 0.6 }]}
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.6 }]}
     >
       <View style={{ flex: 1, gap: 2 }}>
         <Body bold>{title}</Body>
@@ -50,11 +50,13 @@ export function TransactionRow({ txn, showMember }: { txn: Transaction; showMemb
 }
 
 const styles = StyleSheet.create({
+  // Rows sit inside a Group, which draws the dividers.
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    minHeight: 60,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
 });
