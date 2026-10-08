@@ -3,11 +3,9 @@
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { useEffect, useRef, useState } from 'react';
-import { AppState, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AppState } from 'react-native';
 
 import { Body, Button, Card, Label, Row } from './ui';
-import { fonts, useColors } from '@/lib/theme';
 
 const RECHECK_AFTER_MS = 5 * 60 * 1000;
 
@@ -32,51 +30,44 @@ function useForegroundUpdateCheck() {
   }, []);
 }
 
-/** Floating notice once an update has downloaded, so nobody has to restart the app twice. */
-export function UpdateBanner() {
-  const c = useColors();
-  const insets = useSafeAreaInsets();
+/** If an update finishes downloading this soon after the app opens or comes back to the
+ *  foreground, apply it straight away: the user hasn't started doing anything yet. */
+const FRESH_MS = 10_000;
+
+/** Applies downloaded updates without asking, at moments that can't interrupt an entry:
+ *  right after the app opens or resumes, or else the next time it returns from the background.
+ *  Renders nothing. */
+export function AutoUpdater() {
   const { isUpdatePending } = Updates.useUpdates();
-  const [dismissed, setDismissed] = useState(false);
+  const activeSince = useRef(0);
+  const leftApp = useRef(false);
   useForegroundUpdateCheck();
 
-  if (!isUpdatePending || dismissed) return null;
-  return (
-    <View
-      accessibilityLiveRegion="polite"
-      style={{
-        position: 'absolute',
-        top: insets.top + 8,
-        left: 12,
-        right: 12,
-        borderRadius: 14,
-        padding: 14,
-        backgroundColor: c.primary,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        elevation: 6,
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        shadowOffset: { width: 0, height: 3 },
-      }}
-    >
-      <Text style={{ flex: 1, color: c.primaryText, fontFamily: fonts.semibold, fontSize: 15 }}>
-        A new version of Kaasupathayam is ready.
-      </Text>
-      <Pressable onPress={() => setDismissed(true)} hitSlop={8} accessibilityRole="button">
-        <Text style={{ color: c.primaryText, opacity: 0.8, fontSize: 14 }}>Later</Text>
-      </Pressable>
-      <Pressable
-        onPress={() => Updates.reloadAsync()}
-        accessibilityRole="button"
-        style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 }}
-      >
-        <Text style={{ color: c.accentText, fontFamily: fonts.semibold, fontSize: 14 }}>Restart</Text>
-      </Pressable>
-    </View>
-  );
+  useEffect(() => {
+    activeSince.current = Date.now();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') activeSince.current = Date.now();
+      else leftApp.current = true;
+    });
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    if (!isUpdatePending) return;
+    if (Date.now() - activeSince.current < FRESH_MS) {
+      Updates.reloadAsync().catch(() => {});
+      return;
+    }
+    // In use right now: wait until the user leaves the app and comes back.
+    leftApp.current = false;
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') leftApp.current = true;
+      else if (leftApp.current) Updates.reloadAsync().catch(() => {});
+    });
+    return () => sub.remove();
+  }, [isUpdatePending]);
+
+  return null;
 }
 
 /** Settings section: what's running, plus a manual "Check for updates". */
@@ -89,8 +80,9 @@ export function UpdateSettings() {
     setMessage(null);
     try {
       const { isAvailable } = await Updates.checkForUpdateAsync();
-      if (isAvailable) await Updates.fetchUpdateAsync();
-      else setMessage("You're on the latest version.");
+      if (!isAvailable) return setMessage("You're on the latest version.");
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync(); // asked for it, so install right away
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'Could not check for updates');
     }
@@ -120,7 +112,7 @@ export function UpdateSettings() {
           Updates are off in development builds.
         </Body>
       ) : isUpdatePending ? (
-        <Button title="Restart to update" onPress={() => Updates.reloadAsync()} />
+        <Button title="Install update now" onPress={() => Updates.reloadAsync()} />
       ) : (
         <Button
           title={isDownloading ? 'Downloading update…' : 'Check for updates'}
