@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 
-import { MonthButton } from '@/components/MonthButton';
+import { MonthSwitcher } from '@/components/MonthSwitcher';
 import { TrendReport } from '@/components/Reports';
 import { SpendingDonut } from '@/components/SpendingDonut';
 import { SpendingHero } from '@/components/SpendingHero';
@@ -34,6 +34,7 @@ export default function Home() {
   const [month, setMonth] = useState(currentMonth());
   const [view, setView] = useState<'categories' | 'trend'>('categories');
   const { start, end } = monthRange(month);
+  const monthName = fromISODate(start).toLocaleDateString(undefined, { month: 'long' });
   const accounts = useAccounts('me');
   const summary = useSummary('me', start, end);
   const recent = useTransactions({ scope: 'me', start, end, limit: wide ? 8 : 5 });
@@ -50,6 +51,8 @@ export default function Home() {
   }
 
   const s = summary.data;
+  // Same figure as the Accounts tab: bank, cash and wallets minus what's owed on cards.
+  const balance = (accounts.data ?? []).reduce((sum, a) => sum + Number(a.balance), 0);
 
   // Columns only flex side by side on wide screens; on phones `flex: 1` would let them shrink
   // below their content and overlap the next section.
@@ -57,7 +60,12 @@ export default function Home() {
 
   const overview = (
     <View style={[{ gap: 16 }, column]}>
-      <SpendingHero label="Spent this month" summary={s} currency={look.currency} />
+      <SpendingHero
+        label={`Expenses in ${monthName}`}
+        summary={s}
+        currency={look.currency}
+        balance={balance}
+      />
 
       <SegmentedControl
         accessibilityLabel="Breakdown"
@@ -72,7 +80,7 @@ export default function Home() {
         s ? (
           <SpendingDonut
             currency={look.currency}
-            period={fromISODate(start).toLocaleDateString(undefined, { month: 'long' })}
+            period={monthName}
             items={s.by_category
               .filter((x) => x.type === 'expense')
               .map((x) => ({
@@ -113,7 +121,7 @@ export default function Home() {
       maxWidth={wide ? 1000 : 720}
       footer={<Fab label="Add transaction" onPress={() => router.push('/transaction')} />}
     >
-      <MonthButton month={month} onChange={setMonth} />
+      <MonthSwitcher month={month} onChange={setMonth} />
       {wide ? (
         <View style={{ flexDirection: 'row', gap: 24, alignItems: 'flex-start' }}>
           <Card style={{ flex: 1 }}>{overview}</Card>

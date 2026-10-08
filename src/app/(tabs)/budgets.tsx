@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
-import { MonthButton } from '@/components/MonthButton';
+import { MonthSwitcher } from '@/components/MonthSwitcher';
 import { Body, Button, Empty, Group, Loading, SegmentedControl, Screen } from '@/components/ui';
 import { currentMonth, moneyShort } from '@/lib/format';
 import { useBudgetStatus, useLookups } from '@/lib/queries';
@@ -17,7 +17,7 @@ export default function Budgets() {
 
   return (
     <Screen>
-      <MonthButton month={month} onChange={setMonth} />
+      <MonthSwitcher month={month} onChange={setMonth} />
       <SegmentedControl
         accessibilityLabel="Whose budgets"
         options={[

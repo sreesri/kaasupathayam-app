@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Text, View } from 'react-native';
 
 import { AccountRow } from '@/components/AccountRow';
-import { MonthButton } from '@/components/MonthButton';
+import { MonthSwitcher } from '@/components/MonthSwitcher';
 import { TrendReport } from '@/components/Reports';
 import { Select } from '@/components/Select';
 import { SpendingDonut } from '@/components/SpendingDonut';
@@ -37,6 +37,7 @@ export default function HouseholdTab() {
   const [view, setView] = useState<'categories' | 'members' | 'trend'>('categories');
   const [member, setMember] = useState<string>(ALL);
   const { start, end } = monthRange(month);
+  const monthName = fromISODate(start).toLocaleDateString(undefined, { month: 'long' });
   const summary = useSummary('household', start, end);
   const txns = useTransactions({
     scope: 'household',
@@ -62,8 +63,8 @@ export default function HouseholdTab() {
           {household.members.length} {household.members.length === 1 ? 'member' : 'members'}
         </Body>
       </View>
-      <MonthButton month={month} onChange={setMonth} />
-      <SpendingHero label="Household spent this month" summary={s} currency={currency} />
+      <MonthSwitcher month={month} onChange={setMonth} />
+      <SpendingHero label={`Household spent in ${monthName}`} summary={s} currency={currency} />
 
       <SegmentedControl
         accessibilityLabel="Breakdown"
@@ -80,7 +81,7 @@ export default function HouseholdTab() {
       ) : view === 'categories' ? (
         <SpendingDonut
           currency={currency}
-          period={fromISODate(start).toLocaleDateString(undefined, { month: 'long' })}
+          period={monthName}
           items={s.by_category
             .filter((x) => x.type === 'expense')
             .map((x) => ({
