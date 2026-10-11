@@ -28,6 +28,7 @@ export function Select<T extends string>({
   value,
   onChange,
   placeholder = 'Choose',
+  create,
 }: {
   label: string;
   /** Sheet title; defaults to the row label. */
@@ -36,6 +37,8 @@ export function Select<T extends string>({
   value: T | null;
   onChange: (value: T) => void;
   placeholder?: string;
+  /** Adds a first row like "+ New category"; the sheet closes before `onPress` runs. */
+  create?: { label: string; onPress: () => void };
 }) {
   const c = useColors();
   const [open, setOpen] = useState(false);
@@ -89,6 +92,25 @@ export function Select<T extends string>({
           </View>
         )}
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 16 }}>
+          {create && (
+            <Pressable
+              onPress={() => {
+                close();
+                create.onPress();
+              }}
+              accessibilityRole="button"
+              style={({ pressed }) => [
+                styles.option,
+                { borderBottomColor: c.border },
+                pressed && { opacity: 0.6 },
+              ]}
+            >
+              <Ionicons name="add-circle-outline" size={28} color={c.primary} />
+              <Text style={{ flex: 1, fontSize: 16, color: c.primary, fontFamily: fonts.semibold }}>
+                {create.label}
+              </Text>
+            </Pressable>
+          )}
           {shown.map((o) => {
             const isSelected = o.value === value;
             return (

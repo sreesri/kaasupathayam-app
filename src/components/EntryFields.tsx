@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
 
+import { AddCategorySheet } from './AddCategorySheet';
 import { DateField } from './DateField';
 import { applyKey, Keypad } from './Keypad';
 import { Select } from './Select';
@@ -83,6 +85,7 @@ export function EntryFields({
   const myAccounts = useAccounts('me').data ?? [];
   const allAccounts = useAccounts('household').data ?? [];
   const categories = useCategories().data ?? [];
+  const [addingCategory, setAddingCategory] = useState(false);
   const set = (patch: Partial<EntryDraft>) => onChange({ ...draft, ...patch });
   const typeColor = { expense: c.expense, income: c.income, transfer: c.transfer }[draft.type];
 
@@ -176,6 +179,11 @@ export function EntryFields({
               .map((cat) => ({ value: cat.id, label: cat.name, icon: cat.icon }))}
             value={draft.category_id}
             onChange={(category_id) => set({ category_id })}
+            create={{
+              label: 'New category',
+              // Let the picker sheet finish closing before the next sheet slides up.
+              onPress: () => setTimeout(() => setAddingCategory(true), 300),
+            }}
           />
         )}
         <DateField label="Date" value={date} onChange={onDateChange} />
@@ -191,6 +199,15 @@ export function EntryFields({
           />
         </GroupRow>
       </Group>
+
+      {draft.type !== 'transfer' && (
+        <AddCategorySheet
+          kind={draft.type}
+          visible={addingCategory}
+          onClose={() => setAddingCategory(false)}
+          onCreated={(category) => set({ category_id: category.id })}
+        />
+      )}
 
       {Platform.OS !== 'web' && <Keypad onKey={(k) => set({ amount: applyKey(draft.amount, k) })} />}
     </View>
